@@ -18,13 +18,13 @@ class Words:
     self.segment = 0
     self.word = 0
 
-  def peek(self) -> Word|None:
+  def peek(self) -> Word:
     w = self.__peek()
     if w is not None:
       w.word = w.word.strip()
     return w
 
-  def __peek(self) -> Word|None:
+  def __peek(self) -> Word:
     if self.segment < len(self.data['segments']) and self.word < len(self.data['segments'][self.segment]['words']):
       word = self.data['segments'][self.segment]['words'][self.word]
       return Word(word['word'], word['start'], word['end'])
