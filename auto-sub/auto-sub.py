@@ -13,21 +13,32 @@
 #  - Maximum of 38 characters per line and 2 lines per cue, totaling a max of 76 characters per cue
 
 import whisper
-import regex as re
 import json
+import sys
 
-from words import Words, Word
+from words import Words
 import rules
 
+if len(sys.argv) != 3:
+  print(f'usage: f{sys.argv[0]} <input> <model>')
+  print(f'  example: f{sys.argv[0]} aud.aac tiny.en')
+  print(f'  example: f{sys.argv[0]} out.json base.en')
+  sys.exit(1)
 
-# model = whisper.load_model("tiny.en")
-# res = model.transcribe("aud.aac", verbose=True, word_timestamps=True)
-with open('auto-sub/dump.json', 'r') as f:
-  res = json.load(f)
+fname = sys.argv[1]
+modelName = sys.argv[2]
+
+if fname.endswith('.json'):
+  with open('auto-sub/dump.json', 'r') as f:
+    res = json.load(f)
+else:
+  model = whisper.load_model(modelName)
+  res = model.transcribe(fname, verbose=False, word_timestamps=True)
 words = Words(res)
 
 cues = rules.start(words)
 rules.maxchars(cues)
 srt = rules.end(cues)
 
-print(srt)
+with open('out.srt', 'w') as f:
+  f.write(srt)
