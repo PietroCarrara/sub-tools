@@ -12,7 +12,7 @@
 #    must be finished right in this cue (i.e. it can't keep going through the next cue).
 #  - Maximum of 38 characters per line and 2 lines per cue, totaling a max of 76 characters per cue
 
-import whisper
+import whisper_timestamped as whisper
 import json
 import sys
 
@@ -20,20 +20,24 @@ from words import Words
 import rules
 
 if len(sys.argv) != 3:
-  print(f'usage: f{sys.argv[0]} <input> <model>')
-  print(f'  example: f{sys.argv[0]} aud.aac tiny.en')
-  print(f'  example: f{sys.argv[0]} out.json base.en')
-  sys.exit(1)
+    print(f'usage: f{sys.argv[0]} <input> <model>')
+    print(f'  example: f{sys.argv[0]} aud.aac tiny.en')
+    print(f'  example: f{sys.argv[0]} out.json base.en')
+    sys.exit(1)
 
 fname = sys.argv[1]
 modelName = sys.argv[2]
 
 if fname.endswith('.json'):
-  with open('auto-sub/dump.json', 'r') as f:
-    res = json.load(f)
+    with open(fname, 'r') as f:
+        res = json.load(f)
 else:
-  model = whisper.load_model(modelName)
-  res = model.transcribe(fname, verbose=False, word_timestamps=True)
+    model = whisper.load_model(modelName)
+    res = whisper.transcribe_timestamped(model, fname, verbose=False)
+
+    json_value = json.dumps(res)
+    with open("temp.json", "w") as out:
+        out.write(json_value)
 words = Words(res)
 
 cues = rules.start(words)
@@ -41,4 +45,4 @@ rules.maxchars(cues)
 srt = rules.end(cues)
 
 with open('out.srt', 'w') as f:
-  f.write(srt)
+    f.write(srt)
